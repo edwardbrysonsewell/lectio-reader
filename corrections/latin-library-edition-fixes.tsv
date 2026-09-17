@@ -3666,3 +3666,35 @@ cicero--acad	5	1	315	potissmum	potissimum	perseus--phi0474.phi045/046 (checked b
 cicero--acad	5	1	1239	Academnicus	Academicus	perseus--phi0474.phi045/046 (checked by hand)	manual
 cicero--acad	5	1	1589	an Academicas	an Academicus	perseus--phi0474.phi045/046 (checked by hand)	manual
 cicero--acad	1	3	494	inter vallo	intervallo	perseus--phi0474.phi045/046 (checked by hand)	manual
+ammianus--26	5	23	391	regern	regem	perseus--stoa0023.stoa001.perseus-lat2	replace
+ammianus--31	10	4	180	Gothorurn	Gothorum	perseus--stoa0023.stoa001.perseus-lat2	replace
+caesar--bc3	12	3	1141	Pornpeium	Pompeium	perseus--phi0448.phi002.perseus-lat3	replace
+caesar--bc3	13	6	564	Pornpeiana	Pompeiana	perseus--phi0448.phi002.perseus-lat3	replace
+cicero--brut	11	11	253	a ddidisset	addidisset	perseus--phi0474.phi039.perseus-lat2	join
+cicero--nd2	6	1	2443	Inunc	Hunc	perseus--phi0474.phi050.perseus-lat1	replace
+cicero--topica	4	6	144	accedissent	accidissent	perseus--phi0474.phi042.perseus-lat2	replace
+cicero--tusc1	11	5	504	Igraris	Ignaris	perseus--phi0474.phi049.perseus-lat2	replace
+cicero--tusc5	8	8	81	Etenirn	Etenim	perseus--phi0474.phi049.perseus-lat2	replace
+cicero--verres.2.2	16	1	615	Metelluni	Metellum	perseus--phi0474.phi005.perseus-lat2	replace
+ovid--ovid.tristia2	1	3	578	conies	comes	perseus--phi0959.phi008.perseus-lat2	replace
+prudentius--prud10	4	13	178	ungulate	ungulae	perseus--stoa0238.stoa001.perseus-lat2	replace
+quintilian--quintilian.institutio2	4	1	1954	exaliemplum	exemplum	perseus--phi1002.phi001.perseus-lat2	replace
+quintilian--quintilian.institutio2	11	3	1117	uideanimus	uidemus	perseus--phi1002.phi001.perseus-lat2	replace
+sen--seneca.ep17-18	10	1	501	Primummultum	Primum multum	perseus--phi1017.phi015.perseus-lat2	split
+sen--seneca.ep17-18	10	2	1420	sapienssapienti	sapiens sapienti	perseus--phi1017.phi015.perseus-lat2	split
+sen--seneca.ep20	5	7	2310	paupertatemconfitenti	paupertatem confitenti	perseus--phi1017.phi015.perseus-lat2	split
+seneca.contr1	1	3	108	aetat em	aetatem	perseus--phi1014.phi001.perseus-lat1	join
+seneca.contr1	1	3	76	de clamatoribus	declamatoribus	perseus--phi1014.phi001.perseus-lat1	join
+sha--marcant	6	2	54	initialia	initia	perseus--phi2331.phi004.perseus-lat2	replace
+suetonius--suet.nero	8	5	419	Apollinern	Apollinem	perseus--phi1348.abo016.perseus-lat2	replace
+suetonius--suet.vesp	3	11	422	transiliebat	transibat	perseus--phi1348.abo020.perseus-lat2	replace
+tertullian--tertullian.anima	5	2	1664	Prirno	Primo	perseus--stoa0275.stoa010.opp-lat1	replace
+tertullian--tertullian.ieiunio	4	1	738	ipsurn	ipsum	perseus--stoa0275.stoa018.opp-lat1	replace
+tertullian--tertullian.marcionem1	9	1	1726	illunij	illum	perseus--stoa0275.stoa006.opp-lat1	replace
+tertullian--tertullian.marcionem3	4	1	2151	fonna	forma	perseus--stoa0275.stoa006.opp-lat1	replace
+tertullian--tertullian.marcionem5	14	1	1166	etiarn	etiam	perseus--stoa0275.stoa006.opp-lat1	replace
+tertullian--tertullian.marcionem5	16	1	22	rnisit	misit	perseus--stoa0275.stoa006.opp-lat1	replace
+tertullian--tertullian.praxean	6	1	1616	Nostrani	Nostram	perseus--stoa0275.stoa007.opp-lat1	replace
+tertullian--tertullian.praxean	8	1	162	visoni	visum	perseus--stoa0275.stoa007.opp-lat1	replace
+tertullian--tertullian.scorpiace	1	2	4123	luceni	lucem	perseus--stoa0275.stoa030.opp-lat1	replace
+tibullus2	1	5	176	Clenius	Genius	perseus--phi0660.phi001.perseus-lat2	replace
