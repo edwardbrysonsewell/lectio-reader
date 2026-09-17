@@ -11,7 +11,7 @@ const positions=safeRead('lectio.positions',{});let controls;
 const navigate=async(id,target,anchor=0)=>{if(book?.id!==id)await openBook(id);if(book?.id!==id)throw Error('That saved text is unavailable.');page=Math.max(0,Math.min(target,data.pages.length-1));renderPage(anchor);};
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').style.display='none',6500);}
 function halt(){}
-function show(id){if(!$(id).open){if(id==='wordDialog'&&innerWidth>=1000)$(id).show();else $(id).showModal();}}
+function show(id){if(!$(id).open){if(id==='wordDialog'){$(id).show();document.body.classList.add('sheet-open');}else $(id).showModal();}}
 const darkQuery=matchMedia('(prefers-color-scheme: dark)'),CHROME={paper:'#fbfaf7',sepia:'#f3ead6',night:'#121c1a'};
 const effectiveTheme=()=>prefs.theme==='auto'?(darkQuery.matches?'night':'paper'):prefs.theme;
 function applyPrefs(){const r=document.documentElement,mode=effectiveTheme();r.dataset.mode=mode;document.querySelector('meta[name=theme-color]')?.setAttribute('content',CHROME[mode]||CHROME.paper);$('themeButton').setAttribute('aria-pressed',String(mode==='night'));$('themeButton').title=mode==='night'?'Day mode (N)':'Night mode (N)';$('themeButton').setAttribute('aria-label',mode==='night'?'Switch to day mode':'Switch to night mode');r.dataset.font=prefs.font;r.style.setProperty('--size',prefs.size?prefs.size+'px':'clamp(21px,5.5vw,25px)');r.style.setProperty('--leading',prefs.leading);$('fontOutput').textContent=prefs.size?prefs.size+' px':'Auto';$('fontSize').value=prefs.size||23;$('lineHeight').value=prefs.leading;$('fontFamily').value=prefs.font;document.querySelectorAll('[data-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.theme===prefs.theme)));save('lectio.preferences',prefs);controls?.preferences();}
@@ -55,11 +55,16 @@ function whitakerBlock(found){
  return box;
 }
 function dictionaryJSON(path){if(!dictionaryCache.has(path))dictionaryCache.set(path,json(path).catch(e=>{dictionaryCache.delete(path);throw e;}));return dictionaryCache.get(path);}
-async function lookup(word){
- const turn=++lookupToken;const dlg=$('wordDialog');dlg.dataset.mode=!word||(dlg.open&&dlg.dataset.mode==='search')?'search':'tap';$('lookupStatus').classList.remove('problem');$('selectedWord').textContent=word;$('lookupInput').value=word;$('definitions').replaceChildren();$('lookupStatus').textContent='Looking up…';show('wordDialog');$('wordDialog').scrollTop=0;document.dispatchEvent(new CustomEvent('lectio:lookup',{detail:{word}}));if(!word){$('lookupStatus').textContent='Enter a Latin word or headword. Macrons and u/v variants are accepted.';return;}
+const phoneSheet=()=>innerWidth<1000&&!matchMedia('(orientation:landscape) and (max-height:520px)').matches;
+// The sentence around a tapped word, kept with saved words.
+function sentenceAround(w){const p=w.closest('p');if(!p)return '';let offset=0;const walk=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);while(walk.nextNode()){if(w.contains(walk.currentNode))break;offset+=walk.currentNode.textContent.length;}
+ const text=p.textContent,start=Math.max(...['.','!','?',';',':'].map(c=>text.lastIndexOf(c,offset-1)))+1;let end=text.length;for(const c of ['.','!','?',';',':']){const i=text.indexOf(c,offset+w.textContent.length);if(i>=0&&i<end)end=i+1;}
+ let sentence=text.slice(start,end).replace(/\s+/g,' ').trim();if(sentence.length>320)sentence=text.slice(Math.max(0,offset-150),offset+170).replace(/\s+/g,' ').trim();return sentence;}
+async function lookup(word,context=null){
+ const turn=++lookupToken;const dlg=$('wordDialog');dlg.dataset.mode=!word||(dlg.open&&dlg.dataset.mode==='search')?'search':'tap';$('lookupStatus').classList.remove('problem');$('selectedWord').textContent=word;$('lookupInput').value=word;$('definitions').replaceChildren();$('lookupStatus').textContent='Looking up…';show('wordDialog');$('wordDialog').scrollTop=0;document.dispatchEvent(new CustomEvent('lectio:lookup',{detail:{word,context}}));if(!word){$('lookupStatus').textContent='Enter a Latin word or headword. Macrons and u/v variants are accepted.';return;}
  try{indexPromise??=json('dictionary/index.json').catch(e=>{indexPromise=null;throw e;});const form=normalize(word);const [idx,morph]=await Promise.all([indexPromise,dictionaryJSON('morphology/'+shardFor(form)+'.json')]);const rows=candidates(word,idx,morph);const quick=whitaker(form);
   const [results,short]=await Promise.all([Promise.all(rows.map(async([shard,id,head])=>({head,entry:(await dictionaryJSON('dictionary/'+shard+'.json'))[id]}))),quick]);if(turn!==lookupToken)return;
-  if(short.length)$('definitions').append(whitakerBlock(short));
+  if(short.length)$('definitions').append(whitakerBlock(short));document.dispatchEvent(new CustomEvent('lectio:meaning',{detail:{word,meaning:short[0]?{head:short[0].head,pos:short[0].pos,senses:short[0].senses}:null}}));
   $('lookupStatus').textContent=results.length?`${results.length} possible headword${results.length===1?'':'s'}. These are candidates, not contextual parses.`:'No match in the supplied dictionary and word-form data. Try an edited headword.';if(!results.length&&!short.length)$('lookupStatus').classList.add('problem');
   for(const {head,entry} of results){
    if(!entry)continue;const d=el('section',undefined,'definition');
@@ -89,7 +94,20 @@ $('bookSearch').oninput=renderLibrary;$('eraFilter').onchange=renderLibrary;for(
 $('previous').onclick=()=>{if(page>0){halt();page--;renderPage();}};$('next').onclick=()=>{if(page<data.pages.length-1){halt();page++;renderPage();}};
 $('barPrevious').onclick=()=>$('previous').click();$('barNext').onclick=()=>$('next').click();
 $('tocButton').onclick=()=>{if(!data)return;$('tocList').replaceChildren();for(let i=0;i<data.pages.length;i++){const b=el('button',String(i+1));b.setAttribute('aria-current',String(i===page));b.onclick=()=>{halt();page=i;renderPage();$('tocDialog').close();};const excerpt=data.pages[i].join(' ').replace(/\s+/g,' ').slice(0,95);const label=data.labels?.[i];b.textContent=label||'Passage '+(i+1);if(label)b.append(el('span',' · '+(i+1),'toc-number'));b.append(el('small',excerpt+'…'));$('tocList').append(b);}show('tocDialog');$('tocList').querySelector('[aria-current=true]')?.scrollIntoView({block:'center'});};
-function selectWord(w){document.querySelectorAll('.word.selected').forEach(n=>n.classList.remove('selected'));w.classList.add('selected');lookup(w.textContent);}
+function selectWord(w){document.querySelectorAll('.word.selected').forEach(n=>n.classList.remove('selected'));w.classList.add('selected');lookup(w.textContent,{sentence:sentenceAround(w),paragraph:+w.closest('p')?.dataset.paragraph||0});
+ // Keep the tapped line visible above the half-height sheet on phones.
+ if(phoneSheet())requestAnimationFrame(()=>{const top=$('wordDialog').getBoundingClientRect().top,r=w.getBoundingClientRect(),bar=$('topbar')?.getBoundingClientRect().bottom||70;if(r.bottom>top-16||r.top<bar+8)scrollBy({top:r.top-Math.max(bar+24,(top-bar)/2+bar-r.height),behavior:'smooth'});});}
+// Bottom sheet: drag the top edge up to expand, down to shrink or close; scrolling the entries also expands it.
+{const d=$('wordDialog');let y0=null;const edge=e=>e.target.closest('.heading,.sheet-handle');
+ d.addEventListener('touchstart',e=>{y0=edge(e)&&phoneSheet()?e.touches[0].clientY:null;},{passive:true});
+ d.addEventListener('touchend',e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;if(dy<-30)d.classList.add('expanded');else if(dy>40){if(d.classList.contains('expanded'))d.classList.remove('expanded');else d.close();}},{passive:true});
+ d.addEventListener('scroll',()=>{if(phoneSheet()&&d.scrollTop>40)d.classList.add('expanded');},{passive:true});
+ const handle=el('button',undefined,'sheet-handle');handle.type='button';handle.setAttribute('aria-label','Expand or shrink definition');handle.onclick=()=>d.classList.toggle('expanded');d.querySelector('.heading').prepend(handle);
+ d.addEventListener('close',()=>{d.classList.remove('expanded');document.body.classList.remove('sheet-open');});}
+// Swipe left or right across the text to change passage.
+{let t0=null;$('passage').addEventListener('touchstart',e=>{t0=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()}:null;},{passive:true});
+ $('passage').addEventListener('touchend',e=>{if(!t0)return;const dx=e.changedTouches[0].clientX-t0.x,dy=e.changedTouches[0].clientY-t0.y,dt=Date.now()-t0.t;t0=null;
+  if(Math.abs(dx)>70&&Math.abs(dy)<Math.abs(dx)*0.45&&dt<700&&!getSelection().toString()){const b=$(dx<0?'barNext':'barPrevious');if(!b.disabled)b.click();}},{passive:true});}
 $('passage').onclick=e=>{const w=e.target.closest('.word');if(prefs.lookup!==false&&w&&getSelection().toString().trim().length===0)selectWord(w);};
 $('passage').onkeydown=e=>{const w=e.target.closest('.word');if(!w||prefs.lookup===false)return;if(['Enter',' '].includes(e.key)){e.preventDefault();selectWord(w);}else if(['ArrowLeft','ArrowRight'].includes(e.key)){const words=[...$('passage').querySelectorAll('.word')],i=words.indexOf(w),next=words[i+(e.key==='ArrowRight'?1:-1)];if(next){e.preventDefault();w.tabIndex=-1;next.tabIndex=0;next.focus();}}};
 $('lookupForm').onsubmit=e=>{e.preventDefault();lookup($('lookupInput').value.trim());};$('wordDialog').addEventListener('close',()=>{lookupToken++;if($('wordDialog').contains(document.activeElement))document.activeElement.blur();document.querySelectorAll('.word.selected').forEach(n=>n.classList.remove('selected'));});
@@ -106,7 +124,7 @@ $('importButton').onclick=()=>show('importDialog');$('importForm').onsubmit=asyn
 window.addEventListener('scroll',()=>{clearTimeout(positionTimer);positionTimer=setTimeout(()=>remember(),350);},{passive:true});window.addEventListener('pagehide',()=>{remember();halt();});
 for(const event of ['online','offline'])window.addEventListener(event,()=>$('connection').textContent=navigator.onLine?'Your personal library':'Offline · saved files');
 let installEvent;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvent=e;$('installApp').hidden=false;});$('installApp').onclick=async()=>{await installEvent?.prompt();$('installApp').hidden=true;};
-controls=setupReaderControls({state:()=>({book,data,page,prefs,positions}),anchor:visibleParagraph,navigate,lookup,show,toast,applyPrefs,personalTexts:()=>personalOp('readonly',s=>s.getAll())});
+controls=setupReaderControls({state:()=>({book,data,page,prefs,positions}),anchor:visibleParagraph,navigate,lookup,whitaker:w=>whitaker(normalize(w)),show,toast,applyPrefs,personalTexts:()=>personalOp('readonly',s=>s.getAll())});
 applyPrefs();
 (async()=>{if(!isSecureContext)throw Error('Open Lectio through its local launcher or HTTPS; file:// and phone HTTP do not support offline installation.');
  if('serviceWorker'in navigator){let refreshing=false;const hadController=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController&&!refreshing){refreshing=true;remember();location.reload();}});}
