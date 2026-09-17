@@ -48,7 +48,7 @@ def adapt(original, target):
     return "".join(fixed)
 
 def main():
-    rows = [r for r in csv.DictReader(open(ROOT / "work/typo-candidates.tsv"), delimiter="\t") if r["evidence"].startswith("edition")]
+    rows = [r for r in csv.DictReader(open(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "work/typo-candidates.tsv"), delimiter="\t") if r["evidence"].startswith("edition")]
     by_text = collections.defaultdict(list)
     for r in rows:
         by_text[r["text"]].append(r)

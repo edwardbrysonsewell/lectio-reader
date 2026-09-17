@@ -60,7 +60,15 @@ def load_known():
         known.update(json.loads(f.read_text()))
     return known
 
+def ce_only(a, b):
+    """True when two same-length forms differ only where one reads c and the other e (a common scanning confusion)."""
+    diff = [(x, y) for x, y in zip(a, b) if x != y]
+    return len(a) == len(b) and bool(diff) and all({x, y} == {"c", "e"} for x, y in diff)
+
 def main():
+    # --ce: report only c/e confusions confirmed by the aligned edition. These escape the normal
+    # tier because the corpus was built from the same scans, so forms like quac or cius are not rare.
+    ce_mode = "--ce" in sys.argv
     known = load_known()
     db = sqlite3.connect(CORPUS)
     freq = dict(db.execute("select word,total_freq from corpus_freq"))
@@ -131,7 +139,10 @@ def main():
                     if re.search(r"[\[\]<>⟨⟩{}]", span) or after in ("'", "’") or (i2 - i1 == 2 and para[flat[i1][3]:flat[i1 + 1][2]].strip()):
                         continue
                     capital = para[first[2]].isupper()
-                    if len(a) == 1 and len(e) == 1 and suspect(a[0]) and good(e[0]) and spelling_key(a[0]) != spelling_key(e[0]):
+                    if ce_mode:
+                        if len(a) == 1 and len(e) == 1 and ce_only(a[0], e[0]) and good(e[0]) and freq.get(a[0], 0) <= 200:
+                            fix = ("replace", e[0])
+                    elif len(a) == 1 and len(e) == 1 and suspect(a[0]) and good(e[0]) and spelling_key(a[0]) != spelling_key(e[0]):
                         d = distance(a[0], e[0])
                         if ocr_fold(a[0]) != a[0]:
                             d = min(d, max(1, distance(ocr_fold(a[0]), e[0])))
@@ -147,7 +158,7 @@ def main():
 
         # Neighbor tier for every text, skipping forms already handled and capitalised names.
         for i, (pg, pa, s, e, w) in enumerate(flat):
-            if i in edition_positions or not suspect(w, 1) or len(w) < 4:
+            if ce_mode or i in edition_positions or not suspect(w, 1) or len(w) < 4:
                 continue
             original = data["pages"][pg][pa][s:e]
             if original[0].isupper():
@@ -170,7 +181,7 @@ def main():
             print(f"{n}/{len(ll)} texts · {matched} aligned · {len(rows)} candidates", file=sys.stderr, flush=True)
 
     out = ROOT / "work"; out.mkdir(exist_ok=True)
-    with (out / "typo-candidates.tsv").open("w") as fh:
+    with (out / ("typo-candidates-ce.tsv" if ce_mode else "typo-candidates.tsv")).open("w") as fh:
         fh.write("text\tpage\tparagraph\tstart\tend\tevidence\tkind\tfound\tproposed\n")
         for r in rows:
             fh.write("\t".join(map(str, r)) + "\n")
