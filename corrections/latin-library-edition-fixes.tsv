@@ -5320,3 +5320,48 @@ perseus--phi0474.phi053.perseus-lat2	26	12	388	veroid	vero id	cicero--divination
 perseus--phi0474.phi053.perseus-lat2	26	12	422	volosuperstitione	volo. superstitione	cicero--divinatione	manual-review
 perseus--phi0474.phi053.perseus-lat2	7	12	291	mter, optim tu	mater, optumatum	cicero--divinatione	manual-review
 perseus--phi0474.phi053.perseus-lat2	18	16	261	prem'int	premunt	cicero--divinatione	manual-review
+caesar--gall2	1	4	586	adfinitatibus quo	adfinitatibusque	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall2	4	3	728	praesidium	praesidio	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall2	4	3	705	custodiam	custodiae	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall4	1	8	459	imperaturus	imperaturum	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall4	4	5	261	angustior	angustiora	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall4	4	8	389	quos	suos	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall5	2	6	233	mila	milia	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall5	3	6	300	invenerit	convenerit	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall5	3	6	52	inuria	iniuria	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall5	4	7	122	deducat	deducant	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall5	6	1	148	quos clam	quosdam	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall6	1	4	575	Renis	Remis	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall6	1	8	143	per territis	perterritis	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall6	3	8	305	illa tum	inlatum	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall7	3	7	248	inter valla	intervalla	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall7	4	1	1003	inter scinderent	interscinderent	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall7	5	2	443	magistra tum	magistratum	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall7	8	7	566	incitatus	incitatas	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall8	2	3	510	haec	hac	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall8	2	5	285	XIlI	XIII	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall8	6	5	529	profecto	profectus	perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--gall1	1	1	776	Eorum una, pars	Eorum una pars	edition:perseus--phi0448.phi001.perseus-lat2	manual-review
+caesar--bc1	1	1	280	senatu	senatui	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc1	1	6	1062	exeant	exeunt	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc1	4	1	1045	Frentranorum	Frentanorum	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc1	6	4	1014	has	hos	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc1	9	3	360	angustius	angustiis	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc2	2	3	602	turibus	turribus	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	3	5	468	eum	cum	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	4	4	666	impeto	impetu	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	9	4	1442	eiti	expositi	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	9	6	540	eum	cum	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	10	1	928	T. Pulieone	T. Pulione	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	11	5	1245	euerunt	exposuerunt	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	13	2	253	eum	cum	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	16	1	1169	euit	exposuit	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--bc3	16	2	73	exstructae	exstructa	perseus--phi0448.phi002.perseus-lat3	manual-review
+caesar--alex	2	6	1395	eceret	exposceret	context review (no edition available)	manual-review
+caesar--bellafr	2	1	549	eita	exposita	context review (no edition available)	manual-review
+caesar--bellafr	2	1	644	eitos	expositos	context review (no edition available)	manual-review
+caesar--bellafr	1	3	222	paulipser	paulisper	context review (no edition available)	manual-review
+caesar--bellafr	8	6	22	excercitus	exercitus	context review (no edition available)	manual-review
+caesar--hisp	2	1	180	fecundidatem	fecunditatem	context review (no edition available)	manual-review
+caesar--hisp	4	2	658	sub sidio	subsidio	context review (no edition available)	join
+caesar--hisp	4	4	882	civi tates	civitates	context review (no edition available)	join
