@@ -38,11 +38,28 @@ async function openBook(id){
  if(!loaded.pages?.length)throw Error('This source has no passages.');book=next;data=loaded;page=Math.min(positions[book.id]?.page||0,data.pages.length-1);renderPage(positions[book.id]?.anchor||0);
 }
 const dictionaryCache=new Map();
+// Whitaker's Words: short definitions and parses precomputed per word form (scripts/build-whitaker.py).
+async function whitaker(form){
+ try{const [forms,parses]=await Promise.all([dictionaryJSON('whitaker/forms/'+shardFor(form)+'.json'),dictionaryJSON('whitaker/parses.json')]);const rows=forms[form]||[];
+  const found=await Promise.all(rows.map(async([id,...ps])=>{const e=(await dictionaryJSON('whitaker/entries-'+Math.floor(id/4000)+'.json'))[id];return e&&{head:e[0],pos:e[1],age:e[2],senses:e[3],rank:e[4],parses:ps.map(i=>parses[i]).filter(Boolean)};}));
+  return found.filter(Boolean).sort((a,b)=>a.rank-b.rank);
+ }catch{return [];}
+}
+function whitakerBlock(found){
+ const box=el('section',undefined,'whitaker');box.append(el('p',"Whitaker's Words",'whitaker-title'));
+ const item=w=>{const d=el('div',undefined,'whitaker-entry');const h=el('p',undefined,'whitaker-head');h.append(el('strong',w.head),' ',el('span',[w.pos,w.age].filter(Boolean).join(' · '),'whitaker-pos'));d.append(h);
+  if(w.parses.some(Boolean))d.append(el('p',w.parses.filter(Boolean).join('; '),'whitaker-parse'));d.append(el('p',w.senses,'whitaker-senses'));return d;};
+ const common=found.filter(w=>w.rank<=found[0].rank+2).slice(0,3),rest=found.filter(w=>!common.includes(w));
+ common.forEach(w=>box.append(item(w)));
+ if(rest.length){const more=el('details');more.append(el('summary',`${rest.length} rarer reading${rest.length===1?'':'s'}`));rest.forEach(w=>more.append(item(w)));box.append(more);}
+ return box;
+}
 function dictionaryJSON(path){if(!dictionaryCache.has(path))dictionaryCache.set(path,json(path).catch(e=>{dictionaryCache.delete(path);throw e;}));return dictionaryCache.get(path);}
 async function lookup(word){
  const turn=++lookupToken;$('selectedWord').textContent=word;$('lookupInput').value=word;$('definitions').replaceChildren();$('lookupStatus').textContent='Looking up…';show('wordDialog');$('wordDialog').scrollTop=0;document.dispatchEvent(new CustomEvent('lectio:lookup',{detail:{word}}));if(!word){$('lookupStatus').textContent='Enter a Latin word or headword. Macrons and u/v variants are accepted.';return;}
- try{indexPromise??=json('dictionary/index.json').catch(e=>{indexPromise=null;throw e;});const form=normalize(word);const [idx,morph]=await Promise.all([indexPromise,dictionaryJSON('morphology/'+shardFor(form)+'.json')]);const rows=candidates(word,idx,morph);
-  const results=await Promise.all(rows.map(async([shard,id,head])=>({head,entry:(await dictionaryJSON('dictionary/'+shard+'.json'))[id]})));if(turn!==lookupToken)return;
+ try{indexPromise??=json('dictionary/index.json').catch(e=>{indexPromise=null;throw e;});const form=normalize(word);const [idx,morph]=await Promise.all([indexPromise,dictionaryJSON('morphology/'+shardFor(form)+'.json')]);const rows=candidates(word,idx,morph);const quick=whitaker(form);
+  const [results,short]=await Promise.all([Promise.all(rows.map(async([shard,id,head])=>({head,entry:(await dictionaryJSON('dictionary/'+shard+'.json'))[id]}))),quick]);if(turn!==lookupToken)return;
+  if(short.length)$('definitions').append(whitakerBlock(short));
   $('lookupStatus').textContent=results.length?`${results.length} possible headword${results.length===1?'':'s'}. These are candidates, not contextual parses.`:'No match in the supplied dictionary and word-form data. Try an edited headword.';
   for(const {head,entry} of results){
    if(!entry)continue;const d=el('section',undefined,'definition');
