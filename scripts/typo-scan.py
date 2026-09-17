@@ -40,6 +40,15 @@ ASSIMILATION = [("adf", "aff"), ("adl", "all"), ("adp", "app"), ("adc", "acc"), 
     ("subf", "suff"), ("subp", "supp"), ("subc", "succ"), ("obp", "opp"), ("obf", "off"), ("exs", "ex"), ("ii", "i"), ("ae", "e"), ("oe", "e"), ("y", "i"),
     ("ph", "f"), ("th", "t"), ("ch", "c"), ("mn", "m"), ("mpn", "mn"), ("michi", "mihi"), ("nichil", "nihil"), ("quom", "cum"), ("uo", "ue"), ("uu", "u"), ("k", "c")]
 
+OCR = [("rn", "m"), ("nn", "m"), ("cl", "d"), ("li", "h"), ("ii", "n"), ("in", "m"), ("ni", "m"), ("tl", "d")]
+
+def ocr_fold(w):
+    """Undo one classic scanning confusion (rn read for m, cl for d …) if the word contains it."""
+    for a, b in OCR:
+        if a in w:
+            return w.replace(a, b, 1)
+    return w
+
 def spelling_key(w):
     for a, b in ASSIMILATION:
         w = w.replace(a, b)
@@ -118,11 +127,14 @@ def main():
                     first, last = flat[i1], flat[i2 - 1]
                     para = data["pages"][first[0]][first[1]]
                     span = para[max(0, first[2] - 2):last[3] + 2]
-                    if re.search(r"[\[\]<>⟨⟩{}'’]", span) or (i2 - i1 == 2 and para[flat[i1][3]:flat[i1 + 1][2]].strip()):
+                    after = para[last[3]:last[3] + 1]
+                    if re.search(r"[\[\]<>⟨⟩{}]", span) or after in ("'", "’") or (i2 - i1 == 2 and para[flat[i1][3]:flat[i1 + 1][2]].strip()):
                         continue
                     capital = para[first[2]].isupper()
                     if len(a) == 1 and len(e) == 1 and suspect(a[0]) and good(e[0]) and spelling_key(a[0]) != spelling_key(e[0]):
                         d = distance(a[0], e[0])
+                        if ocr_fold(a[0]) != a[0]:
+                            d = min(d, max(1, distance(ocr_fold(a[0]), e[0])))
                         if (d == 1 or (d == 2 and len(a[0]) >= 7)) and (not capital or (d == 1 and freq.get(e[0], 0) >= 20)):
                             fix = ("replace", e[0])
                     elif len(a) == 2 and len(e) == 1 and a[0] + a[1] == e[0] and good(e[0]) and any(unword(x) and freq.get(x, 0) <= 2 for x in a):

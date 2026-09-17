@@ -44,9 +44,9 @@ export function setupReaderControls(api){
   if(['ArrowLeft','ArrowRight'].includes(e.key)&&(e.altKey||!e.target.closest('.word'))){click(e.key==='ArrowLeft'?'barPrevious':'barNext');return;}
   if(e.altKey)return;
   const key=e.key.length===1?e.key.toLowerCase():e.key;
-  if(key==='/'||key==='f'){e.preventDefault();openFind();}
+  if(key==='?'||(key==='/'&&e.shiftKey))click('shortcutsButton');
+  else if(key==='/'||key==='f'){e.preventDefault();openFind();}
   else if(key==='b'){e.preventDefault();bookmark();}
-  else if(key==='?')click('shortcutsButton');
   else{const target={l:'libraryButton',t:'tocButton',d:'dictionaryButton',k:'savedButton',n:'themeButton',s:'settingsButton',z:'focusButton'}[key];if(target)click(target);}
  });
  document.addEventListener('lectio:page',()=>{update();prefs();});window.addEventListener('scroll',()=>{clearTimeout(update.timer);update.timer=setTimeout(update,250);},{passive:true});

@@ -16,3 +16,11 @@ const conor=read('dictionary/c.json')['c-4461'];assert.equal(entryLabel(conor),'
 let conflicts=0;for(const file of fs.readdirSync(new URL('dictionary/',root)).filter(f=>f!=='index.json'))for(const row of Object.values(read('dictionary/'+file))){if(entryLabel(row)&&row.part_of_speech==='noun'){assert(!entryLabel(row).toLowerCase().includes('noun'));conflicts++;}}assert.equal(conflicts,14);console.log('PASS: all 14 detected noun/verb metadata conflicts handled.');
 const manifest=read('offline-manifest.json');for(const f of manifest.files){const b=fs.readFileSync(new URL(f.path,root));assert.equal(b.length,f.bytes,f.path);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),f.sha256,f.path);}
 console.log('PASS: 2,328 texts/editions including 345 Perseus editions, Caesar, Erasmus, verse breaks, 51,596 entries, nine morphology cases, corrected conor presentation, and '+manifest.files.length+' offline file hashes.');
+
+// Text-quality regressions (2026-09-16): clean Perseus conversion and edition-backed corrections.
+const words=id=>read('texts/'+id+'.json').pages.flat().join(' ');
+const acadP=words('perseus--phi0474.phi045.perseus-lat2');assert(acadP.includes('paulumque cum ab eius villa abessemus'),'Perseus Academica reading text');assert(!/\bom\. Δ|Reitz\.|\bcodd\./.test(acadP),'apparatus removed from Perseus Academica');
+const aen=read('texts/perseus--phi0690.phi003.perseus-lat2.json');assert(aen.pages[0][0].startsWith('Arma virumque cano, Troiae qui primus ab oris\nItaliam'),'Perseus Aeneid keeps verse lines');assert.equal(aen.labels.length,aen.pages.length);assert.equal(aen.labels[0],'Book 1 · lines 1–156');
+for(const b of catalog.filter(b=>b.collection)){const d=read(b.file);assert(Array.isArray(d.labels)&&d.labels.length===d.pages.length,b.id+' labels');}
+const acadLL=words('cicero--acad');for(const bad of ['manihus','tellebris','clissereret','Academnicus','inter vallo'])assert(!acadLL.includes(bad),'Latin Library Academica still has '+bad);assert(acadLL.includes('ab is qui illum audierunt'),'genuine form ab is kept');
+console.log('PASS: Perseus apparatus removed, verse lines and passage labels present, Academica corrections applied and genuine forms kept.');
