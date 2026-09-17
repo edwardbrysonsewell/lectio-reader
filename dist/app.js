@@ -56,11 +56,11 @@ function whitakerBlock(found){
 }
 function dictionaryJSON(path){if(!dictionaryCache.has(path))dictionaryCache.set(path,json(path).catch(e=>{dictionaryCache.delete(path);throw e;}));return dictionaryCache.get(path);}
 async function lookup(word){
- const turn=++lookupToken;$('selectedWord').textContent=word;$('lookupInput').value=word;$('definitions').replaceChildren();$('lookupStatus').textContent='Looking up…';show('wordDialog');$('wordDialog').scrollTop=0;document.dispatchEvent(new CustomEvent('lectio:lookup',{detail:{word}}));if(!word){$('lookupStatus').textContent='Enter a Latin word or headword. Macrons and u/v variants are accepted.';return;}
+ const turn=++lookupToken;const dlg=$('wordDialog');dlg.dataset.mode=!word||(dlg.open&&dlg.dataset.mode==='search')?'search':'tap';$('lookupStatus').classList.remove('problem');$('selectedWord').textContent=word;$('lookupInput').value=word;$('definitions').replaceChildren();$('lookupStatus').textContent='Looking up…';show('wordDialog');$('wordDialog').scrollTop=0;document.dispatchEvent(new CustomEvent('lectio:lookup',{detail:{word}}));if(!word){$('lookupStatus').textContent='Enter a Latin word or headword. Macrons and u/v variants are accepted.';return;}
  try{indexPromise??=json('dictionary/index.json').catch(e=>{indexPromise=null;throw e;});const form=normalize(word);const [idx,morph]=await Promise.all([indexPromise,dictionaryJSON('morphology/'+shardFor(form)+'.json')]);const rows=candidates(word,idx,morph);const quick=whitaker(form);
   const [results,short]=await Promise.all([Promise.all(rows.map(async([shard,id,head])=>({head,entry:(await dictionaryJSON('dictionary/'+shard+'.json'))[id]}))),quick]);if(turn!==lookupToken)return;
   if(short.length)$('definitions').append(whitakerBlock(short));
-  $('lookupStatus').textContent=results.length?`${results.length} possible headword${results.length===1?'':'s'}. These are candidates, not contextual parses.`:'No match in the supplied dictionary and word-form data. Try an edited headword.';
+  $('lookupStatus').textContent=results.length?`${results.length} possible headword${results.length===1?'':'s'}. These are candidates, not contextual parses.`:'No match in the supplied dictionary and word-form data. Try an edited headword.';if(!results.length&&!short.length)$('lookupStatus').classList.add('problem');
   for(const {head,entry} of results){
    if(!entry)continue;const d=el('section',undefined,'definition');
    const title=el('h3',entry.title_orthography||head);d.append(title);
@@ -71,7 +71,7 @@ async function lookup(word){
    const note=el('p','Lewis & Short · supplied Perseus digitization','entry-source');d.append(note);
    $('definitions').append(d);
   }
- }catch(e){if(turn===lookupToken)$('lookupStatus').textContent=e.message;}
+ }catch(e){if(turn===lookupToken){$('lookupStatus').textContent=e.message;$('lookupStatus').classList.add('problem');}}
 }
 function fail(e){console.error(e);toast(e.message||String(e));}
 async function stats(){const s=await inventory();$('offlineStats').textContent=`${s.count.toLocaleString()} / ${s.total.toLocaleString()} files saved · ${(s.bytes/1e6).toFixed(1)} / ${(s.totalBytes/1e6).toFixed(1)} MB`;$('downloadProgress').value=s.bytes/s.totalBytes*100;return s;}
