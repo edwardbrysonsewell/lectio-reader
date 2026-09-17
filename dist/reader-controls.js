@@ -1,13 +1,14 @@
 import {normalize} from './engine.mjs';
 const $=id=>document.getElementById(id),node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const load=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
+const label=(id,text)=>{($(id).querySelector('.label')||$(id)).textContent=text;};
 export function setupReaderControls(api){
  let bookmarks=load('lectio.bookmarks',[]),words=load('lectio.words',[]),favorites=load('lectio.favorites',[]),selectedWord='';
  if(!Array.isArray(bookmarks))bookmarks=[];if(!Array.isArray(words))words=[];if(!Array.isArray(favorites))favorites=[];
  const store=(key,value)=>{try{localStorage.setItem('lectio.'+key,JSON.stringify(value));return true;}catch{api.toast('Could not save your change. Browser storage may be full.');return false;}};
  const point=()=>{const s=api.state();return s.book?{bookId:s.book.id,title:s.book.title,author:s.book.author,page:s.page,anchor:Math.max(0,api.anchor()),created:Date.now()}:null;};
  const hasBookmark=p=>p&&bookmarks.some(b=>b.bookId===p.bookId&&b.page===p.page&&b.anchor===p.anchor);
- function update(){const s=api.state(),p=point();$('bookmarkButton').setAttribute('aria-pressed',String(!!hasBookmark(p)));$('bookmarkButton').textContent=hasBookmark(p)?'◆ Bookmarked':'◇ Bookmark';$('favoriteButton').textContent=favorites.includes(s.book?.id)?'★ Favorite':'☆ Favorite';$('favoriteButton').setAttribute('aria-pressed',String(favorites.includes(s.book?.id)));$('jumpPage').max=s.data?.pages.length||1;$('jumpPage').value=s.page+1;}
+ function update(){const s=api.state(),p=point();$('bookmarkButton').setAttribute('aria-pressed',String(!!hasBookmark(p)));label('bookmarkButton',hasBookmark(p)?'Bookmarked':'Bookmark');label('favoriteButton',favorites.includes(s.book?.id)?'Favorited':'Favorite');$('favoriteButton').setAttribute('aria-pressed',String(favorites.includes(s.book?.id)));$('jumpPage').max=s.data?.pages.length||1;$('jumpPage').value=s.page+1;}
  function prefs(){const p=api.state().prefs;document.documentElement.style.setProperty('--reader-width',({narrow:620,comfortable:780,wide:980})[p.width]+'px');document.documentElement.style.setProperty('--paragraph-gap',p.paragraphGap||'1.2em');document.documentElement.dataset.lookup=String(p.lookup!==false);document.querySelectorAll('#passage .word').forEach((w,i)=>{w.tabIndex=p.lookup!==false&&i===0?0:-1;if(p.lookup===false)w.removeAttribute('role');else w.setAttribute('role','button');});$('readingWidth').value=p.width||'comfortable';$('paragraphGap').value=p.paragraphGap||'1.2em';$('tapLookup').checked=p.lookup!==false;}
  function saveFile(name,type,text){const u=URL.createObjectURL(new Blob([text],{type})),a=node('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);}
  function bookmark(){const p=point();if(!p)return;const i=bookmarks.findIndex(b=>b.bookId===p.bookId&&b.page===p.page&&b.anchor===p.anchor);const next=[...bookmarks];if(i>=0)next.splice(i,1);else next.unshift({...p,id:crypto.randomUUID(),excerpt:api.state().data.pages[p.page][p.anchor]?.slice(0,180)||'',note:''});if(store('bookmarks',next)){bookmarks=next;api.toast(i>=0?'Bookmark removed.':'Reading place bookmarked.');update();}}
@@ -31,11 +32,23 @@ export function setupReaderControls(api){
  $('findButton').onclick=openFind;$('textSearch').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(find,180);};$('textSearchForm').onsubmit=e=>{e.preventDefault();clearTimeout(searchTimer);find();};
  $('jumpForm').onsubmit=e=>{e.preventDefault();const n=Number($('jumpPage').value),s=api.state();if(!Number.isInteger(n)||n<1||n>s.data.pages.length){api.toast('Choose a passage between 1 and '+s.data.pages.length+'.');return;}$('tocDialog').close();api.navigate(s.book.id,n-1,0).catch(e=>api.toast(e.message));};
  for(const [id,key] of [['readingWidth','width'],['paragraphGap','paragraphGap'],['tapLookup','lookup']])$(id).onchange=()=>{api.state().prefs[key]=$(id).type==='checkbox'?$(id).checked:$(id).value;api.applyPrefs();prefs();};
- function focus(value){document.body.classList.toggle('focus-reading',value);$('focusButton').textContent=value?'Exit focus':'Focus';$('focusButton').setAttribute('aria-pressed',String(value));$('exitFocus').hidden=!value;}
+ function focus(value){document.body.classList.toggle('focus-reading',value);label('focusButton',value?'Exit focus':'Focus');$('focusButton').setAttribute('aria-pressed',String(value));$('exitFocus').hidden=!value;}
  $('focusButton').onclick=()=>focus(!document.body.classList.contains('focus-reading'));$('exitFocus').onclick=()=>focus(false);
  $('exportText').onclick=()=>{const s=api.state();if(!s.book)return;saveFile(s.book.title.replace(/[^\p{L}\p{N} -]/gu,'').slice(0,90)+'.txt','text/plain;charset=utf-8',`${s.book.author}\n${s.book.title}\n${s.book.source||'Personal text'}\n\n`+s.data.pages.flat().join('\n\n'));};
  $('exportBackup').onclick=async()=>{try{const s=api.state();saveFile('Lectio-reading-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json',JSON.stringify({format:'lectio-reading-backup',version:1,exportedAt:new Date().toISOString(),preferences:s.prefs,positions:s.positions,favorites,bookmarks,words,personalTexts:await api.personalTexts()},null,2));}catch(e){api.toast('Backup could not be created: '+e.message);}};
- document.addEventListener('keydown',e=>{if(e.key==='Escape'){const dialogs=[...document.querySelectorAll('dialog[open]')];if(dialogs.length){e.preventDefault();dialogs.at(-1).close();}else if(document.body.classList.contains('focus-reading'))focus(false);return;}if(e.target.closest('input,textarea,select,[contenteditable]'))return;if(document.querySelector('dialog[open]'))return;if(e.key==='/'&&!e.metaKey&&!e.ctrlKey){e.preventDefault();openFind();}else if(e.altKey&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();$(e.key==='ArrowLeft'?'barPrevious':'barNext').click();}else if(e.key.toLowerCase()==='b'&&!e.metaKey&&!e.ctrlKey&&!e.altKey){e.preventDefault();bookmark();}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){const dialogs=[...document.querySelectorAll('dialog[open]')];if(dialogs.length){e.preventDefault();dialogs.at(-1).close();}else if(document.body.classList.contains('focus-reading'))focus(false);return;}if(e.target.closest('input,textarea,select,[contenteditable]'))return;
+  // The desktop definition panel is non-modal: keep reading shortcuts available beside it.
+  const modal=[...document.querySelectorAll('dialog[open]')].some(d=>{try{return d.matches(':modal');}catch{return d.id!=='wordDialog';}});if(modal)return;
+  if(e.metaKey||e.ctrlKey)return;
+  const click=id=>{e.preventDefault();$(id).click();};
+  if(['ArrowLeft','ArrowRight'].includes(e.key)&&(e.altKey||!e.target.closest('.word'))){click(e.key==='ArrowLeft'?'barPrevious':'barNext');return;}
+  if(e.altKey)return;
+  const key=e.key.length===1?e.key.toLowerCase():e.key;
+  if(key==='/'||key==='f'){e.preventDefault();openFind();}
+  else if(key==='b'){e.preventDefault();bookmark();}
+  else if(key==='?')click('shortcutsButton');
+  else{const target={l:'libraryButton',t:'tocButton',d:'dictionaryButton',k:'savedButton',n:'themeButton',s:'settingsButton',z:'focusButton'}[key];if(target)click(target);}
+ });
  document.addEventListener('lectio:page',()=>{update();prefs();});window.addEventListener('scroll',()=>{clearTimeout(update.timer);update.timer=setTimeout(update,250);},{passive:true});
  return {isFavorite:id=>favorites.includes(id),refresh:update,preferences:prefs};
 }

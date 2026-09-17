@@ -17,3 +17,55 @@
 @media print{header,footer,.breadcrumb,.reading-tools,dialog,#toast,#exitFocus{display:none!important}body{padding:0;background:white;color:black}#reader{max-width:none}#passage{font-size:12pt}}
 .library-browse{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}.library-browse button{min-height:44px}.library-browse [aria-pressed=true]{background:var(--accent);color:var(--paper)}.library-browse button:last-child{margin-left:auto}.book-list.work-detail{display:block}.work-detail>h3{font:28px/1.3 Georgia,serif;margin:8px 0 16px}.work-detail>h4{font-size:13px;color:var(--muted);margin:25px 0 10px}.work-detail>.book-author{margin-top:18px}.work-parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.work-parts .book-card{min-height:90px}.book-card strong{overflow-wrap:anywhere}.work-detail>.primary{max-width:100%;white-space:normal;text-align:left}.library-browse button:focus-visible,.book-card:focus-visible{outline:3px solid #b39154;outline-offset:3px}
 .library-detail .library-tools,.library-detail .library-filters,.library-detail .collection-summary,.library-detail .library-meta,.library-detail .library-browse{display:none}.library-detail .work-detail{margin-top:14px}.library-detail .work-parts{grid-template-columns:repeat(2,minmax(0,1fr))}.library-detail .work-parts .book-card{padding:14px;min-height:90px}.library-detail .work-parts .book-card strong{font-size:19px}
+
+/* Navigation bar, reading tools menu and night mode */
+body{padding-top:0}
+header{position:sticky;top:0;z-index:30;height:auto;min-height:calc(60px + env(safe-area-inset-top));display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:10px;padding:env(safe-area-inset-top) max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));background:var(--paper);background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:saturate(1.3) blur(12px);backdrop-filter:saturate(1.3) blur(12px);border-bottom:1px solid var(--line)}
+.brand{font-size:24px;min-height:44px}.brand .monogram{width:32px;height:38px;font-size:26px}.brand small{font-size:8px}
+.where{border:0;background:transparent;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:6px 10px;text-align:left;border-radius:10px}
+.where:hover{background:var(--soft)}
+#whereBook{font:17px/1.25 Georgia,serif;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wherePassage{font-size:12px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wherePassage::after{content:' ▾';font-size:10px}
+.toolbar{display:flex;align-items:center;gap:1px}
+.tool{border:0;background:transparent;color:var(--ink);min-width:44px;min-height:44px;padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px;border-radius:10px}
+.tool:hover{background:var(--soft)}
+.tool svg,.menu-grid svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tool[aria-pressed=true],.menu-grid [aria-pressed=true]{color:var(--accent);background:var(--soft)}
+[aria-pressed=true] .fill-on{fill:currentColor}
+.tool .label{display:none}
+.aa{font:21px/1 Georgia,serif}
+#themeButton .sun,#themeButton[aria-pressed=true] .moon{display:none}#themeButton[aria-pressed=true] .sun{display:block}
+.divider{width:1px;height:26px;background:var(--line);margin:0 5px}
+#connection{font-size:12px;color:var(--muted);white-space:nowrap;margin-right:8px;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+.phone-only{display:none!important}
+@media(min-width:1300px){.tool .label{display:inline}.tool{padding:8px 11px}}
+@media(max-width:1180px){#connection{display:none}}
+@media(max-width:899px){.desk-only{display:none!important}.phone-only{display:inline-flex!important}.brand-name{display:none}header{column-gap:4px;padding-left:max(10px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right))}#whereBook{font-size:16px}}
+.book-heading{padding-top:30px}
+#passage p{scroll-margin-top:calc(80px + env(safe-area-inset-top))}
+.search-match{scroll-margin-top:calc(80px + env(safe-area-inset-top))}
+@media(min-width:1000px){#wordDialog{inset:calc(72px + env(safe-area-inset-top)) 18px 100px auto}}
+#tocList .toc-number{font-weight:400;color:var(--muted)}
+.menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.menu-grid button{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:13px;padding:14px 4px;min-height:74px;background:var(--panel)}
+.menu-grid button:disabled{opacity:.4}
+#menuDialog .heading{margin-bottom:16px}
+.first-setting{margin-top:0}.themes{flex-wrap:wrap}.themes button{min-width:calc(50% - 5px)}
+#shortcutsButton{margin-top:6px}
+.shortcuts{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0;font-size:15px;align-items:baseline}.shortcuts dt{white-space:nowrap;color:var(--muted);font-size:13px}.shortcuts dd{margin:0}
+kbd{font:12px/1 -apple-system,sans-serif;display:inline-block;min-width:24px;text-align:center;padding:5px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--panel);color:var(--ink)}
+@media(max-width:550px){#menuDialog,#shortcutsDialog{margin:auto 0 0;width:100%;max-width:100%;border-radius:20px 20px 0 0;padding-bottom:calc(24px + env(safe-area-inset-bottom))}.book-heading{padding-top:18px}}
+@media(orientation:landscape) and (max-height:520px){header{min-height:calc(50px + env(safe-area-inset-top))}}
+/* Night: soften highlights so a selected word does not glare */
+[data-mode=night]{--paper:#121c1a;--panel:#1a2825;--soft:#263833;--line:#31443e;--ink:#dfe6dd;--muted:#9eaca4}
+[data-mode=night] body{background:var(--paper)}
+[data-mode=night] .word.selected{background:#4f4424;color:#f3ead0;border-bottom-color:#b39154}
+[data-mode=night] .word:hover{border-bottom-color:#8b7446}
+[data-mode=night] #passage::selection,[data-mode=night] .word::selection{background:#4f4424}
+[data-mode=night] .rule{background:#8b7446}
+[data-mode=night] dialog::backdrop{background:#000b}
+[data-mode=night] .search-match{border-left-color:#8b7446}
+[data-mode=night] .library-browse [aria-pressed=true]{color:#121c1a}
+[data-mode=sepia] .word.selected{background:#e3cf98}
+.verse-line{display:block;padding-left:1.4em;text-indent:-1.4em}
